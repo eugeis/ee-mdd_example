@@ -1,0 +1,4 @@
+include 'ee-mdd_example-api', 'ee-mdd_example-cfg', 'ee-mdd_example-shared'
+include 'ee-mdd_example-backend', 'ee-mdd_example-backend_jpa'
+include 'ee-mdd_example-client', 'ee-mdd_example-cli', 'ee-mdd_example-ui'
+include 'ee-mdd_example-test'
