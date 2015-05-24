@@ -1,3 +1,13 @@
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+  }
+  dependencies { classpath 'ee.mdd:ee-mdd-gradle:1.0-SNAPSHOT' }
+}
+
+apply plugin: 'ee.mdd'
+
 allprojects {
   group = 'ee.mdd_example'
   version = '1.0-SNAPSHOT'
@@ -37,11 +47,23 @@ subprojects {
     }
 
     task createFolders << { task ->
-      ['src/main/java', 'src/main/resources', 'src/test/java', 'src/test/resources', 'src-gen/main/java', 'src-gen/main/resources', 'src-gen/test/java', 'src-gen/test/resources'].each { name ->
+      [
+        'src/main/java',
+        'src/main/resources',
+        'src/test/java',
+        'src/test/resources',
+        'src-gen/main/java',
+        'src-gen/main/resources',
+        'src-gen/test/java',
+        'src-gen/test/resources'
+      ].each { name ->
         def file = new File("$task.project.name/$name")
         file.mkdirs()
       }
     }
+  }
+
+  mdd {
   }
 
   defaultTasks 'build', 'install'
