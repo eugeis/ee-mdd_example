@@ -238,7 +238,25 @@ model ('Controlguide', key: 'cg', namespace: 'com.siemens.ra.cg', uri: 'cg.test'
         }
       }
 
+      module('cfg') {
+      }
+      
+      module('api') {
+      }
+      
+      module('client') {
+      }
+      
       module('ui', namespace: 'ui') {
+      }
+      
+      module('test', namespace: 'test') {
+      }
+      
+      module('cli', namespace: 'cli') {
+      }
+      
+      module('backend_jpa', namespace: 'jpa') {
       }
     }
   }
