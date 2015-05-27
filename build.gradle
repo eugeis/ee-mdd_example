@@ -1,10 +1,25 @@
 buildscript {
+
   repositories {
-    mavenLocal()
-    mavenCentral()
+    def _localRepoDir = System.getenv('CG_LOCAL_REPO') ?: 'D:/CG-maven-repo'
+    def localRepoDir = System.getProperty('localRepoDir', _localRepoDir)
+    maven { url uri(localRepoDir) }
+//    mavenLocal()
+//    mavenCentral()
   }
   dependencies { classpath 'ee.mdd:ee-mdd-gradle:1.0-SNAPSHOT' }
 }
+
+def _scripts = System.getenv('CG_CM_SCRIPTS_HOME') ?: 'D:/CG/src/cg-cm/cg-cm-scripts'
+ext.scripts = project.hasProperty('superpom') ? project.superpom : "$_scripts/gradlebuild"
+logger.info "Calculated 'superpom' location: $scripts"
+
+File f = null
+try {
+  f = file("$scripts/repos.gradle")
+} catch (e) {}
+
+
 
 apply plugin: 'ee.mdd'
 
@@ -29,9 +44,13 @@ subprojects {
     testCompile 'junit:junit:4.+'
   }
 
-  repositories {
-    mavenLocal()
-    mavenCentral()
+  if(f && f.exists()) {
+    apply from: f.absolutePath
+  } else {
+    repositories {
+      mavenLocal()
+      mavenCentral()
+    }
   }
 
   jar {
