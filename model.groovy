@@ -1,18 +1,6 @@
 
 model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 
-  java {
-    common()
-    cdi()
-    ejb()
-    jms()
-    jpa()
-    test()
-    ee()
-    cg()
-  }
-
-
   component('MddExample', key: 'me', namespace: 'example', artifact: 'ee-mdd_example') {
 
         module('shared') {

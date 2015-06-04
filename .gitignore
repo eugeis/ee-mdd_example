@@ -1,9 +1,10 @@
+.DS_Store
+.project
+.classpath
+.settings/
 /bin
 /build
 /target
 /.gradle
-/.DS_Store
-/.classpath
 /.idea/
-/.settings/
 /temp/

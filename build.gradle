@@ -1,11 +1,11 @@
 buildscript {
 
   repositories {
-    def _localRepoDir = System.getenv('CG_LOCAL_REPO') ?: 'D:/CG-maven-repo'
-    def localRepoDir = System.getProperty('localRepoDir', _localRepoDir)
-    maven { url uri(localRepoDir) }
-//    mavenLocal()
-//    mavenCentral()
+    //    def _localRepoDir = System.getenv('CG_LOCAL_REPO') ?: 'D:/CG-maven-repo'
+    //    def localRepoDir = System.getProperty('localRepoDir', _localRepoDir)
+    //    maven { url uri(localRepoDir) }
+    mavenLocal()
+    mavenCentral()
   }
   dependencies { classpath 'ee.mdd:ee-mdd-gradle:1.0-SNAPSHOT' }
 }
@@ -59,7 +59,15 @@ subprojects {
     }
 
     task cleanAll << { task ->
-      ['bin', 'target', 'build', 'dist', 'temp', '.idea', 'dist.zip'].each { name ->
+      [
+        'bin',
+        'target',
+        'build',
+        'dist',
+        'temp',
+        '.idea',
+        'dist.zip'
+      ].each { name ->
         def file = new File("$task.project.name/$name")
         if(file.exists()) if(file.isDirectory())file.deleteDir() else file.delete()
       }
@@ -84,6 +92,19 @@ subprojects {
 
   mdd {
     target = './'
+
+    facets = {
+      java {
+        common()
+        cdi()
+        ejb()
+        jms()
+        jpa()
+        test()
+        ee()
+        cg()
+      }
+    }
   }
 
   defaultTasks 'build', 'install'
