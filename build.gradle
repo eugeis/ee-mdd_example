@@ -93,18 +93,18 @@ subprojects {
   mdd {
     target = './'
 
-    facets = {
-      java {
-        common()
-        cdi()
-        ejb()
-        jms()
-        jpa()
-        test()
-        ee()
-        cg()
-      }
-    }
+//    facets = {
+//      java {
+//        common()
+//        cdi()
+//        ejb()
+//        jms()
+//        jpa()
+//        test()
+//        ee()
+//        cg()
+//      }
+//    }
   }
 
   defaultTasks 'build', 'install'
