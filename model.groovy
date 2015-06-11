@@ -17,10 +17,16 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 
       enumType('AreaLocation',
       description: '''Definition where an area is located see chapter 347''') {
-        lit('BothSides')
-        lit('LeftSide')
+        prop('code', type: 'int')
+        
+        constr { param(prop: 'code') }
+        constr {}
+      
+        lit('BothSides', body: '-13')
+        lit('LeftSide', body: '23')
         lit('OnTrack')
-        lit('RightSide')
+        lit('RightSide', body: '2338')
+       
       }
 
       container('TaskContainer', base:true) {
