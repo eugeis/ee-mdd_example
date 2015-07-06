@@ -6,7 +6,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
         module('shared') {
 
       enumType('TaskType', defaultLiteral: 'Unknown', desc: '''Defines the type of a task''') {
-        prop('code', type: 'int')
+        prop('code', type: 'Integer')
 
         constr { param(prop: 'code') }
 
@@ -17,7 +17,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 
       enumType('AreaLocation',
       description: '''Definition where an area is located see chapter 347''') {
-        prop('code', type: 'int')
+        prop('code', type: 'Integer')
         
         constr { param(prop: 'code') }
         constr {}
@@ -39,7 +39,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 
       entity('Trophy') {
         prop('id', type: 'Long', unique: true, primaryKey: true)
-        prop('value', type: 'int')
+        prop('value', type: 'Integer')
       }
 
 
@@ -78,15 +78,15 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 
       entity('Signal', base: true) {
         prop('id', type: 'Long', primaryKey: true, unique: true)
-        prop('state', type: 'int')
+        prop('state', type: 'Integer')
         prop('position', type: 'Long')
 
         op('testOperation') {
-          param('size', type: 'int')
+          param('size', type: 'Integer')
         }
       }
 
-      entity('Element',
+      entity('Element', virtual: true,
       description: '''An element can be any general topological item which can be identified by a a topological Id and a name An Element can be assigned a ControlArea''') {
         prop('id', type: 'Long', unique: true, primaryKey: true, xml: false, hashCode: true)
         prop('longName', type: 'String', index: true, description: '''Long name of the element''')
@@ -109,7 +109,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
       entity('AllowedConnection',
       description: '''Describes an allowed connection by type which can be attached in the timetable to this location''') {
         prop('id', type: "Long", unique: true, primaryKey: true, xml: false, hashCode: true)
-        prop('direction', type: 'int', index: true, description: '''The direction in which the connection is allowed''')
+        prop('direction', type: 'Integer', index: true, description: '''The direction in which the connection is allowed''')
         prop('stationTrack', type: 'StationTrack', opposite: 'allowedConnections')
         prop('type', type: 'String', description: '''The type of the connection''')
       }
@@ -143,7 +143,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
         prop('created', type: 'Date', unique: true)
         prop('closed', type: 'Date', index: true)
         prop('actions', type: 'String' )
-        prop('size', type: 'int')
+        prop('size', type: 'Integer')
         prop('order', type: 'Long', xml: 'false')
 
         constr {}
@@ -161,7 +161,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 
         op('hello', body: '#testBody') {
           param('Test', type: 'String')
-          param('countdown', type: 'int')
+          param('countdown', type: 'Integer')
         }
 
         index( props: [
@@ -201,8 +201,8 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
       entity('Area') {
         prop('id', type: 'Long', unique: true, primaryKey: true)
         prop('name', type: 'String')
-        prop('age', type: 'int')
-        prop('size', type: 'int')
+        prop('age', type: 'Integer')
+        prop('size', type: 'Integer')
 
         commands {
           delete() { param(prop: 'name') }
