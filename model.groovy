@@ -240,6 +240,15 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
     }
 
     module('ui', namespace: 'ui') {
+      
+      
+      view ('TaskEditor', main:true) {
+        presenter {}
+        viewModel {}
+        button('accept') { onAction(['TaskEditorView.model']) }
+        button('discard') { onAction(['TaskEditorView.model']) }
+      }
+      
     }
 
     module('test', namespace: 'test') {

@@ -39,7 +39,11 @@ subprojects {
   [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
   dependencies {
-    compile group: 'org.slf4j', name:'slf4j-api', version: '1.7.5'
+    compile group: 'org.slf4j', name:'slf4j-api', version: '1.7.12'
+    compile group: 'org.slf4j', name:'slf4j-ext', version: '1.7.12'
+    compile group: 'javax.enterprise', name:'cdi-api', version: '1.2'
+    compile group: 'javax.ejb', name: 'javax.ejb-api', version: '3.2'
+    compile group: 'org.eclipse.persistence', name:'javax.persistence', version: '2.1.0'
     runtime group: 'ch.qos.logback', name:'logback-classic', version: '1.0.11'
     testCompile 'junit:junit:4.+'
   }
@@ -103,6 +107,7 @@ subprojects {
         test()
         ee()
         cg()
+        ui()
       }
     }
   }
