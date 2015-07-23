@@ -239,7 +239,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
     module('client') {
     }
 
-    module('ui', namespace: 'ui') {
+    module('ui') {
       
       
       view ('TaskEditor', main:true) {
