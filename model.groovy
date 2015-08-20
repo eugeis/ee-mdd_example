@@ -28,6 +28,29 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
         lit('RightSide', body: '2338')
        
       }
+      
+      enumType('CatenaryRestrictionState') {
+        lit('New')
+        lit('Planned')
+        lit('ActivationRequested')
+        lit('Activated')
+        lit('ActivationAborted')
+        lit('RevocationRequested')
+        lit('RevocationIncomplete')
+        lit('Ended')
+  
+        op('isDeletable', ret: 'boolean', override: true,
+          description: 'Used to indicate when the catenary restriction is allowed to be deleted.',
+          body: '''return (this == PLANNED) || (this == ENDED);''')
+
+      op('isModifiable', ret: 'boolean', override: true,
+        description: 'Used to indicate when the catenary restriction is allowed to be modified.',
+        body: '''return (this == PLANNED);''')
+  
+        op('isSignalmanAttentionRequired', ret: 'boolean', override: true,
+          description: 'Used to indicate when catenary restriction is in a state that requires signalman attention',
+          body: '''return (this == ACTIVATION_ABORTED);''')
+    }
 
       container('TaskContainer', base:true) {
         prop('Signal', type: 'Signal', cache: true)
@@ -36,11 +59,39 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 
         controller(cache: true) {}
       }
+      
+      
+      entity('CatenaryRestriction', idGeneratorName: 'RM_RSTRCTN_SEQ', clientCache: true,
+        description: 'CatenaryRestriction represents an area of railroad tracks and devices where power is shut off.') {
+          prop('state', type: 'CatenaryRestrictionState', defaultValue: 'CatenaryRestrictionState.NEW')
+          prop('previousState', type: 'CatenaryRestrictionState')
+          prop('stateTimeout', type: 'Date')
+          prop('reasonForStateChange', description: 'Contains the reason for the last state change.')
+          prop('topologyIds', multi:true, sqlName:'ELMNTS', description: 'The list of catenary areas that are affected by the catenary restriction')
+          op('getRestrictionType', ret: 'RestrictionType', override: true, body: '''return RestrictionType.CATENARY_RESTRICTION;''')
+          op('cloneCatenaryRestriction', ret: 'CatenaryRestriction', body: '''CatenaryRestriction clone = ObjectUtils.clone(this); return clone;''')
+
+      commands(base:true) {
+        update(fireEventProp:true) { param(prop: 'state') }
+      }
+      
+      finder(base:true) {
+        findBy { param(prop: 'stateTimeout') }
+        findBy { param(prop: 'state') }
+      }
+    }
+
+      
+      
+      
+      
 
       entity('Trophy') {
         prop('id', type: 'Long', unique: true, primaryKey: true)
         prop('value', type: 'Integer')
       }
+      
+      
 
 
 
@@ -247,6 +298,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
         viewModel {}
         button('accept') { onAction(['TaskEditorView.model']) }
         button('discard') { onAction(['TaskEditorView.model']) }
+        dialog{}
       }
       
     }
@@ -259,5 +311,107 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 
     module('backend_jpa', namespace: 'jpa') {
     }
+    
+    
+    stateMachine('CatenaryRestrictionWorkflow', key: 'catworkflow', entityRef: '//shared.CatenaryRestriction', statePropRef: 'state', stateTimeoutPropRef: 'stateTimeout',
+  timeoutCheckInterval: '2s', facade: true, description: 'State machine for Catenary Restrictions', generatePermissionsForEvents: true) {
+
+    controller('CatenaryRestrictionController', superRef:'//backend.RestrictionWorkflowController', description: 'The controller provides operations for Catenary Restrictions',
+    types:[
+      'com.siemens.ra.cg.ats.disp.rm.model.CatenaryRestriction'
+    ]) {
+
+      op('deleteCatenaryRestrictions',
+      description: 'Deletes all Catenary Restrictions',
+      body: '''catenaryRestrictionManager.deleteAll();''')
+
+      op('updateCatenaryRestriction', returnType: 'CatenaryRestriction') {
+        param('restriction', type: 'CatenaryRestriction')
+      }
+
+      delegate('//backend.CatenaryRestriction.manager.create')
+      delegate('//backend.CatenaryRestriction.manager.delete')
+
+      inject('//backend.CatenaryRestrictionHistoryEntry.manager')
+    }
+
+    //actions
+    action('requestCatenaryActivation', async: true)
+    action('requestCatenaryRevocation', async: true)
+    action('updateReasonForStateChange')
+    action('resetReasonForStateChange', body: 'context.getCatenaryRestriction().setReasonForStateChange(null);')
+    action('setActualStartDate', body: 'context.getCatenaryRestriction().setActualStartDate(new java.util.Date());')
+    action('setActualEndDate', body: 'context.getCatenaryRestriction().setActualEndDate(new java.util.Date());')
+
+    //conditions
+    condition('userIsAssignedToCatenaryRestriction')
+
+    //events
+    event('create')
+    event('modify')
+    event('activateReq')
+    event('activateConfirm')
+    event('activateError', alternative: true) { prop('reason') }
+    event('revokeReq')
+    event('revokeConfirm')
+    event('revokeError', alternative: true) { prop('reason') }
+    event('revokeManually')
+    event('reset')
+
+    //states
+    state('New') {
+      on('create', to: 'Planned', fireEvent: false, groups:['Signalman', 'Planner', 'OmCoordinator'])
+    }
+
+    state('Planned') {
+      on('activateReq', to: 'ActivationRequested', conditions:['userIsAssignedToCatenaryRestriction'],
+        fireEvent: true, groups:['Signalman', 'OmCoordinator'])
+    }
+
+    state('ActivationRequested', timeout: '1min', entryActions: ['requestCatenaryActivation']) {
+      on('activateConfirm', to: 'Activated', actions: ['resetReasonForStateChange'],
+        fireEvent: false, groups:['Tms'])
+      on('activateError', to: 'ActivationAborted', actions: ['updateReasonForStateChange'],
+        fireEvent: false, groups:['Tms'])
+      on('timeout', to: 'ActivationAborted')
+    }
+
+    state('Activated', entryActions: ['setActualStartDate']) {
+      on('revokeReq', to: 'RevocationRequested', conditions:['userIsAssignedToCatenaryRestriction'],
+        fireEvent: true, groups:['Signalman','OmCoordinator'])
+    }
+
+    state('ActivationAborted') {
+      on('reset', to: 'Planned', actions: ['resetReasonForStateChange'],
+         conditions:['userIsAssignedToCatenaryRestriction'],
+         fireEvent: false, groups:['Signalman','Planner'])
+    }
+
+    state('RevocationRequested', timeout: '1min', entryActions: ['requestCatenaryRevocation']) {
+      on('revokeConfirm', to: 'Ended', actions: ['resetReasonForStateChange'], groups:['Tms'])
+      on('revokeError', to: 'RevocationIncomplete', actions: ['updateReasonForStateChange'],
+        fireEvent: false, groups:['Tms'])
+      on('timeout', to: 'RevocationIncomplete')
+    }
+
+    state('RevocationIncomplete') {
+      on('revokeManually', to: 'Ended', actions: ['resetReasonForStateChange'], conditions:['userIsAssignedToCatenaryRestriction'],
+        fireEvent: true, groups:['Signalman','OmCoordinator'])
+    }
+
+    state('Ended', entryActions: ['setActualEndDate']) {
+
+    }
+
+    history('//backend.CatenaryRestrictionHistoryEntry', oldStateProp: 'previousState', newStateProp: 'newState',
+    actorProp: 'actor', actionProp: 'action', dateProp: 'dateOfOccurrence', reasonProp: 'reasonForStateChange', stateMachineEntityHistoryEntriesProp: 'historyEntries')
+
+    stateMachineController {}
+
+    context {}
+  }
+    
+    
+     
   }
 }
