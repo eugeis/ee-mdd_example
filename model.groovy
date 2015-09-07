@@ -63,11 +63,12 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
       
       entity('CatenaryRestriction', idGeneratorName: 'RM_RSTRCTN_SEQ', clientCache: true,
         description: 'CatenaryRestriction represents an area of railroad tracks and devices where power is shut off.') {
+          prop('id', type: 'Long', primaryKey: true, unique: true)
           prop('state', type: 'CatenaryRestrictionState', defaultValue: 'CatenaryRestrictionState.NEW')
           prop('previousState', type: 'CatenaryRestrictionState')
           prop('stateTimeout', type: 'Date')
-          prop('reasonForStateChange', description: 'Contains the reason for the last state change.')
-          prop('topologyIds', multi:true, sqlName:'ELMNTS', description: 'The list of catenary areas that are affected by the catenary restriction')
+          prop('reasonForStateChange', type: 'String', description: 'Contains the reason for the last state change.')
+          prop('topologyIds', type: 'Long', multi:true, sqlName:'ELMNTS', description: 'The list of catenary areas that are affected by the catenary restriction')
           op('getRestrictionType', ret: 'RestrictionType', override: true, body: '''return RestrictionType.CATENARY_RESTRICTION;''')
           op('cloneCatenaryRestriction', ret: 'CatenaryRestriction', body: '''CatenaryRestriction clone = ObjectUtils.clone(this); return clone;''')
 
@@ -279,60 +280,27 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
         delegate(ref: 'Area.finder.findBySize')
         delegate(ref: 'Area.finder.existByName')
       }
-    }
-
-    module('cfg') {
-    }
-
-    module('api') {
-    }
-
-    module('client') {
-    }
-
-    module('ui') {
       
+      stateMachine('CatenaryRestrictionWorkflow', key: 'catworkflow', entityRef: '//shared.CatenaryRestriction', statePropRef: 'state', stateTimeoutPropRef: 'stateTimeout',
+        timeoutCheckInterval: '2s', description: 'State machine for Catenary Restrictions', generatePermissionsForEvents: true) {
       
-      view ('TaskEditor', main:true) {
-        presenter {}
-        viewModel {}
-        button('accept') { onAction(['TaskEditorView.model']) }
-        button('discard') { onAction(['TaskEditorView.model']) }
-        dialog{}
-      }
+          controller('CatenaryRestrictionController', superUnit:'//backend.RestrictionWorkflowController', description: 'The controller provides operations for Catenary Restrictions',
+          types:[
+            'com.siemens.ra.cg.ats.disp.rm.model.CatenaryRestriction'
+          ]) {
       
-    }
+            op('deleteCatenaryRestrictions',
+            description: 'Deletes all Catenary Restrictions',
+            body: '''catenaryRestrictionManager.deleteAll();''')
 
-    module('test', namespace: 'test') {
-    }
-
-    module('cli', namespace: 'cli') {
-    }
-
-    module('backend_jpa', namespace: 'jpa') {
-    }
-    
-    
-    stateMachine('CatenaryRestrictionWorkflow', key: 'catworkflow', entityRef: '//shared.CatenaryRestriction', statePropRef: 'state', stateTimeoutPropRef: 'stateTimeout',
-  timeoutCheckInterval: '2s', facade: true, description: 'State machine for Catenary Restrictions', generatePermissionsForEvents: true) {
-
-    controller('CatenaryRestrictionController', superRef:'//backend.RestrictionWorkflowController', description: 'The controller provides operations for Catenary Restrictions',
-    types:[
-      'com.siemens.ra.cg.ats.disp.rm.model.CatenaryRestriction'
-    ]) {
-
-      op('deleteCatenaryRestrictions',
-      description: 'Deletes all Catenary Restrictions',
-      body: '''catenaryRestrictionManager.deleteAll();''')
-
-      op('updateCatenaryRestriction', returnType: 'CatenaryRestriction') {
+      op('updateCatenaryRestriction', ret: 'CatenaryRestriction') {
         param('restriction', type: 'CatenaryRestriction')
       }
+      // delegates could not be resolved
+      //delegate(ref:'CatenaryRestriction.commands.create')
+      //delegate(ref:'shared.CatenaryRestriction.commands.findByState')
 
-      delegate('//backend.CatenaryRestriction.manager.create')
-      delegate('//backend.CatenaryRestriction.manager.delete')
-
-      inject('//backend.CatenaryRestrictionHistoryEntry.manager')
+      //inject('//backend.CatenaryRestrictionHistoryEntry.manager')
     }
 
     //actions
@@ -351,10 +319,10 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
     event('modify')
     event('activateReq')
     event('activateConfirm')
-    event('activateError', alternative: true) { prop('reason') }
+    event('activateError', alternative: true) { prop('reason', type: 'String') }
     event('revokeReq')
     event('revokeConfirm')
-    event('revokeError', alternative: true) { prop('reason') }
+    event('revokeError', alternative: true) { prop('reason', type: 'String') }
     event('revokeManually')
     event('reset')
 
@@ -410,8 +378,43 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 
     context {}
   }
-    
-    
-     
+      
+      
+      
+      
+      
+    }
+
+    module('cfg') {
+    }
+
+    module('api') {
+    }
+
+    module('client') {
+    }
+
+    module('ui') {
+      
+      
+      view ('TaskEditor', main:true) {
+        presenter {}
+        viewModel {}
+        button('accept') { onAction(['TaskEditorView.model']) }
+        button('discard') { onAction(['TaskEditorView.model']) }
+        dialog{}
+      }
+      
+    }
+
+    module('test', namespace: 'test') {
+    }
+
+    module('cli', namespace: 'cli') {
+    }
+
+    module('backend_jpa', namespace: 'jpa') {
+    }
+ 
   }
 }
