@@ -253,26 +253,15 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
         }
       }
 
-      entity('Task', superUnit: 'ExampleEntity', labelBody: 'String.format("%s(%s)", name, id)', attributeChangeFlag: true, ordered: true) {
+      //TODO: if(ordered) we have to manually add a new porp 'ordered', this cannot be done dynamically yet
+      entity('Task', superUnit: 'ExampleEntity', labelBody: 'String.format("%s(%s)", id)', ordered: true) {
         prop('type', type: 'TaskType', defaultValue:'TaskType.TODO')
-        prop('comment', type: 'Comment', opposite: 'testTask')
+        prop('comment', type: 'String')
         prop('actions', type: 'TaskAction', opposite: 'task', multi: true)
-        
-        constr {}
-
-        constr {
-          param(prop: 'name')
-          param(prop: 'created', value: '#newDate')
-        }
-
-        constr {
-          param(prop: 'actions')
-          param(prop: 'created')
-          param(prop: 'closed')
-        }
+        prop('order', type: 'Long', xml: false)
 
         op('hello', body: '#testBody') {
-          param('testString', type: 'String')
+          param('test', type: 'String')
           param('countdown', type: 'Integer')
         }
 
@@ -350,27 +339,6 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
           prop('reasonForStateChange', type: 'String')
     
         }
-      
-      entity('CatenaryRestrictionHistoryEntry', base:true, superUnit: 'HistoryEntry', superGenericRefs:['CatenaryRestrictionState'], clientCache: true,
-        description: 'Contains a transition of a catenary restriction from a state to another.',
-        types:[
-          'com.siemens.ra.cg.pl.common.base.ml.MLKey',
-          'com.siemens.ra.cg.pl.common.base.ml.MLKeyEmbeddable',
-          'com.siemens.ra.cg.ats.disp.rm.model.CatenaryRestrictionState'
-        ]) {
-      prop('id', type: 'Long', unique: true, primaryKey: true)
-      prop('restriction', type: 'CatenaryRestriction')
-
-      cache {}
-      
-      finder(base:true) {
-        
-      }
-      
-      commands(base:true) {
-        
-      }
-    }
         
     container('TaskContainer', base:true) {
       prop('Signal', type: 'Signal', cache: true)
@@ -436,8 +404,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
       // delegates could not be resolved
       //delegate(ref:'CatenaryRestriction.commands.create')
       //delegate(ref:'shared.CatenaryRestriction.commands.findByState')
-
-      //inject('//backend.CatenaryRestrictionHistoryEntry.manager')
+      
     }
 
     //actions
@@ -507,9 +474,6 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
     state('Ended', entryActions: ['setActualEndDate']) {
 
     }
-
-    history(entityRef: '//backend.CatenaryRestrictionHistoryEntry', oldStateProp: 'previousState', newStateProp: 'newState',
-    actorProp: 'actor', actionProp: 'action', dateProp: 'dateOfOccurrence', reasonProp: 'reasonForStateChange', stateMachineEntityHistoryEntriesProp: 'historyEntries')
 
     stateMachineController {}
 
