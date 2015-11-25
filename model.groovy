@@ -358,17 +358,17 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
         }
       }
 
-      facade('ExampleQueryService', description:'''The Example Query Service provides functionality to retrieve tasks information.''') {
+      facade('ExampleQueryService', base: true, description:'''The Example Query Service provides functionality to retrieve tasks information.''') {
 //        delegate('//backend.TaskContainer.controller.loadAll', name: 'findTaskContainer')
 //        delegate('TaskContainer.controller.loadVersions')
 //        delegate('TaskContainer.controller.loadDiff')
         //delegate('Task.manager.findAll')
 //        delegate('Task.finder.findByName')
-//        delegate('Task.finder.findByType')
-//        delegate('Task.finder.findById')
+          delegate(ref: 'Task.finder.findByType')
+        //delegate(ref: 'Task.finder.findById')
       }
       
-      facade('ExampleCommandService', description:'''The Example Command Service provides functionality to manage tasks.''') {
+      facade('ExampleCommandService', base: true, description:'''The Example Command Service provides functionality to manage tasks.''') {
         op('createTask') {
           param('task', type: 'Task')
           param('waitMillisAfterCreation', type: 'long')
@@ -380,7 +380,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 //        delegate('Task.commands.update')
       }
       
-      facade('ExampleAdminService'){
+      facade('ExampleAdminService', base: true){
         op('reset')
         //inject('Task.manager')
         //inject('TaskAction.manager')
