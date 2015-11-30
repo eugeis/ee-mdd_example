@@ -71,7 +71,6 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
           op('getRestrictionType', ret: 'RestrictionType')
           op('getState', ret: 'RestrictionState')
           op('getPreviousState', ret: 'RestrictionState')
-          op('getHistoryEntries', ret: 'List<? extends HistoryEntry<?>>')
           op('getPlannedStartDateOnly', ret: 'Date', body: 'return getPlannedStartDate();')
           op('getPlannedStartTimeOnly', ret: 'Date', body: 'return getPlannedStartDate();')
           op('getPlannedEndDateOnly', ret: 'Date', body: 'return getPlannedEndDate();')
@@ -324,21 +323,6 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
           findBy{ param(prop: 'protectionRequirements') }
         }
       }
-      
-      entity('HistoryEntry', virtual:true, generics:['S'],
-        types:[
-          'com.siemens.ra.cg.pl.common.base.ml.MLKey',
-          'com.siemens.ra.cg.pl.common.base.ml.MLKeyEmbeddable'
-        ]) {
-          prop('id', type: 'Long', unique:true, primaryKey:true, hashCode: true)
-          prop('previousState', type:'String', generic:true)
-          prop('newState', type:'String', generic:true)
-          prop('dateOfOccurrence', type: 'Date')
-          prop('actor', type: 'String')
-          prop('action', type: 'String')
-          prop('reasonForStateChange', type: 'String')
-    
-        }
         
     container('TaskContainer', base:true) {
       prop('Signal', type: 'Signal', cache: true)
