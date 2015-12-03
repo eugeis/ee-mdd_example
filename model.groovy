@@ -54,16 +54,16 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
       finder{}
     }
 
-    container('TaskContainer', description: '''Container for tasks and all dependend objects''') {
+    container('TaskContainer', base: true, description: '''Container for tasks and all dependend objects''') {
       prop('task', type: 'Task')
       prop('taskAction', type: 'TaskAction')
 
       controller(cache: true, importChanges: true) { }
     }
 
-    facade('ExampleQueryService', description:'''The Example Query Service provides functionality to retrieve tasks information.'''){
+    facade('ExampleQueryService', base: true, description:'''The Example Query Service provides functionality to retrieve tasks information.''') {
 
-//      delegate(ref: '//backend.TaskContainer.controller.loadAll', name: 'findTaskContainer')
+//      delegate(ref: '//backend.TaskContainer.controller.loadAll', name: 'findTaskContainer') delegates will not be resolved because they are not explicitely defined in TaskContainer
 //      delegate(ref: 'TaskContainer.controller.loadVersions')
 //      delegate(ref: 'TaskContainer.controller.loadDiff')
 //      delegate(ref: 'Task.finder.findAll')
@@ -71,7 +71,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 //      delegate(ref: 'Task.finder.findById')
     }
 
-    facade('ExampleCommandService', description:'''The Example Command Service provides functionality to manage tasks.'''){
+    facade('ExampleCommandService', base: true, description:'''The Example Command Service provides functionality to manage tasks.''') {
 
       op('createTask') {
         param('task', type: 'Task')
@@ -84,7 +84,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
 //        delegate(ref: 'Task.commands.update')
     }
       
-    facade('ExampleAdminService'){
+    facade('ExampleAdminService', base: true) {
       op('reset')
 //      inject(ref: 'Task.manager')
 //      inject(ref: 'TaskAction.manager')
@@ -104,6 +104,8 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
       
       
       view ('TaskEditor', main:true) {
+        viewRef(view: 'TaskExplorerView') {}
+        viewRef(view: 'TaskDetailsView') {}
         presenter {}
         viewModel {}
         button('accept') { onAction(['TaskEditorView.model']) }
