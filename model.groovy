@@ -58,7 +58,8 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
       prop('task', type: 'Task')
       prop('taskAction', type: 'TaskAction')
 
-      controller(cache: true, importChanges: true) { }
+      controller(cache: true, importChanges: true, asyncImport: true) { }
+      xmlController(asyncImport: true) {}
     }
 
     facade('ExampleQueryService', base: true, description:'''The Example Query Service provides functionality to retrieve tasks information.''') {
