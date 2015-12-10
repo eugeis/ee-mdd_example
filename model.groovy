@@ -58,13 +58,13 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
       prop('task', type: 'Task')
       prop('taskAction', type: 'TaskAction')
 
-      controller(cache: true, importChanges: true, asyncImport: true) { }
+      controller(cache: true, importChanges: true, asyncImport: true, base: true) { }
       xmlController(asyncImport: true) {}
     }
 
     facade('ExampleQueryService', base: true, description:'''The Example Query Service provides functionality to retrieve tasks information.''') {
 
-//      delegate(ref: '//backend.TaskContainer.controller.loadAll', name: 'findTaskContainer') delegates will not be resolved because they are not explicitely defined in TaskContainer
+//      delegate(ref: '//backend.TaskContainer.controller.loadAll', name: 'findTaskContainer') delegates will not be resolved because they are not explicitely defined in TaskContainer. Default operations have to be created manually until now.
 //      delegate(ref: 'TaskContainer.controller.loadVersions')
 //      delegate(ref: 'TaskContainer.controller.loadDiff')
 //      delegate(ref: 'Task.finder.findAll')
@@ -87,7 +87,7 @@ model ('MddExample', key: 'cg', namespace: 'ee.mdd', uri: 'cg.test') {
       
     facade('ExampleAdminService', base: true) {
       op('reset')
-//      inject(ref: 'Task.manager')
+//      inject(ref: 'Task.manager')       //inject is unknown here
 //      inject(ref: 'TaskAction.manager')
     }
   }
